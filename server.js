@@ -54,6 +54,24 @@ app.post("/api/notes", (req, res) => {
     });
 });
 
+app.delete("/api/notes/:id", (req, res) => {
+    fs.readFile('./db/db.json', 'utf8', (err, data) => {
+        if (err) {
+            throw err;
+        } 
+        const content = JSON.parse(data);
+        const newArray = content.filter(element => element.id != req.params.id);
+        
+
+        fs.writeFile("./db/db.json", JSON.stringify(newArray), (err) => {
+            if (err) {
+                throw err;
+            } 
+            res.json(newArray);
+        });
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`API server now on port ${PORT}`);
 })
