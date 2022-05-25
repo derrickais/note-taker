@@ -2,9 +2,9 @@ const path = require("path");
 const express = require("express");
 const app = express();
 const fs = require("fs");
+const uniqid = require("uniqid");
 
 const PORT = process.env.PORT || 3003;
-const notes = require("./db/db.json");
 
 
 app.use(express.urlencoded({ extended: true }));
@@ -13,7 +13,13 @@ app.use(express.static("public"));
 
 
 app.get("/api/notes", (req, res) => {
-    res.json(notes);
+    fs.readFile('./db/db.json', 'utf8', (err, data) => {
+        if (err) {
+            throw err;
+        } 
+        const content = JSON.parse(data);
+        res.json(content);
+    });
 });
 
 app.get("/", (req, res) => {
@@ -34,9 +40,17 @@ app.post("/api/notes", (req, res) => {
             throw err;
         } 
         const content = JSON.parse(data);
-        content.push(req.body);
+        const id = uniqid();
+        const newNote = req.body;
+        newNote.id = id;
+        content.push(newNote);
 
-        fs.writeFile("./db/db.json", JSON.stringify(content));
+        fs.writeFile("./db/db.json", JSON.stringify(content), (err) => {
+            if (err) {
+                throw err;
+            } 
+            res.json(newNote);
+        });
     });
 });
 
